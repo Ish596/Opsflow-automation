@@ -1,0 +1,696 @@
+{
+  "name": "My workflow 2.0",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "aa747e9a-b2e0-4a0c-bd70-19aeb687c1b2",
+      "name": "When clicking ‘Execute workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "17T0M5fvQtKPubytnIGljsWreLG_LaVcwPU51SfeYc1c",
+          "mode": "list",
+          "cachedResultName": "sample data ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17T0M5fvQtKPubytnIGljsWreLG_LaVcwPU51SfeYc1c/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17T0M5fvQtKPubytnIGljsWreLG_LaVcwPU51SfeYc1c/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "ab70577b-10eb-4e33-b549-dd371412c92a",
+      "name": "Get row(s) in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -656,
+        64
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w2mCnZyX2vBBxP6K",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1cAhbFUtQvtHbnF_dTSPYyVhud7xF_WVds84hjZnuRFk",
+          "mode": "list",
+          "cachedResultName": "sample 2 ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cAhbFUtQvtHbnF_dTSPYyVhud7xF_WVds84hjZnuRFk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cAhbFUtQvtHbnF_dTSPYyVhud7xF_WVds84hjZnuRFk/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "4ada8703-bd44-4322-83eb-aa0ae0d445de",
+      "name": "Get row(s) in sheet1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -656,
+        -128
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w2mCnZyX2vBBxP6K",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "order_id",
+        "options": {}
+      },
+      "id": "f81e115f-9bd4-4de3-853e-b2d8674ffd3f",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -432,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0c6dd7b8-1d68-40a8-8700-051590d28b46",
+              "name": "full name",
+              "value": "={{ $json.first_name }} {{ $json.last_name }}",
+              "type": "string"
+            },
+            {
+              "id": "85462b5d-7574-4326-b305-5816b0523ce0",
+              "name": "priorty",
+              "value": "={{ ($json.status === 'Processing' && $now.diffTo($json.order_date 'days')>45 )? 'High' : 'Standard'}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "except",
+        "excludeFields": "first_name, last_name",
+        "options": {}
+      },
+      "id": "f1d97170-39f0-43e2-9416-24d3ccc96291",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -208,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.priorty }}",
+                    "rightValue": "High",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f5a2f505-9c6b-4e6e-9745-429461febce7"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "process asap"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3454d70f-a761-4119-b757-9e2d98a98291",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "Pending",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pending orders"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5913e733-11fd-497e-877b-d5c171e5637d",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "Delivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Delivered"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c6ebcb61-361f-46dc-9e2f-acccc5063e69",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "Shipped",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Shipped"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c16f9083-830b-4613-ac86-9b36f61e2a2e",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "Refunded",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Refunded "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1daf85be-1d4e-4a7b-b41f-fa278c993d69",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C5N6N84TS",
+          "mode": "list",
+          "cachedResultName": "important-ubdates"
+        },
+        "text": "=High-priority orders to process\n{{ $json['order_ids are ORD0001'] }}",
+        "otherOptions": {}
+      },
+      "id": "9898a99f-0404-4d16-b497-fedae373ba45",
+      "name": "Send a message1",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        688,
+        -416
+      ],
+      "executeOnce": true,
+      "webhookId": "ed0c156b-7d08-4e3b-8e67-976be1e561b2",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "HlrCX08aPTSFikTD",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C5N6N84TS",
+          "mode": "list",
+          "cachedResultName": "important-ubdates"
+        },
+        "text": "=Pending orders {{ $json['pending order ids '] }}",
+        "otherOptions": {}
+      },
+      "id": "7a8abf0b-0c3b-464d-bc87-8d3032a30d57",
+      "name": "Send a message2",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        688,
+        -224
+      ],
+      "executeOnce": true,
+      "webhookId": "b13da2b7-e248-415b-b308-82aa57cda286",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "HlrCX08aPTSFikTD",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "order status ",
+        "emailType": "text",
+        "message": "=hello! your order with order id  {{ $json.order_id }} is delivered.",
+        "options": {}
+      },
+      "id": "90cc7c44-a45a-4c0b-90bb-27a0e5ce482f",
+      "name": "Send a message3",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        -32
+      ],
+      "webhookId": "8a95e3ee-d37f-4d72-903c-7725d3bb4886",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dHAumK3zLFfR7ygq",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "order status ",
+        "emailType": "text",
+        "message": "=hello ! your order with order id  {{ $json.order_id }} has been {{ $json.status }}",
+        "options": {}
+      },
+      "id": "3c70774d-d1a1-4ecd-bfde-966071c4f1e6",
+      "name": "Send a message4",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        160
+      ],
+      "webhookId": "a0e4754c-b3d2-44b7-910d-149b763620ff",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dHAumK3zLFfR7ygq",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C5N6N84TS",
+          "mode": "list",
+          "cachedResultName": "important-ubdates"
+        },
+        "text": "=Orders cancelled and refunded {{ $json['refunded orders'] }}",
+        "otherOptions": {}
+      },
+      "id": "0c3e1b4e-d014-4899-9569-8c6cbdf50779",
+      "name": "Send a message5",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        688,
+        352
+      ],
+      "executeOnce": true,
+      "webhookId": "b05a503a-383d-4e27-82c5-58bdf2099352",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "HlrCX08aPTSFikTD",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "order_id",
+              "renameField": true,
+              "outputFieldName": "pending order ids "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -224
+      ],
+      "id": "8bdac3c4-7cf2-440c-8d42-f1a2fd50cf11",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "order_id",
+              "renameField": true,
+              "outputFieldName": "=order_ids are {{ $json.order_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -416
+      ],
+      "id": "9e6961aa-278b-40db-917c-711dc276633a",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "order_id",
+              "renameField": true,
+              "outputFieldName": "refunded orders"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        464,
+        352
+      ],
+      "id": "572b56fa-53fd-424e-96e3-55af79c79bfc",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "order_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -416
+      ],
+      "id": "754877db-9a30-433f-b3bd-2fb125e692a3",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "order_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -224
+      ],
+      "id": "52a60b8a-6026-4657-a756-638623a17baa",
+      "name": "Remove Duplicates1"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "order_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        240,
+        352
+      ],
+      "id": "4a233dc0-3511-49c1-a164-8be417c23499",
+      "name": "Remove Duplicates2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Remove Duplicates1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Remove Duplicates2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Send a message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6274f8b5-1ff8-45de-99fb-f16ff50d81bc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d3f8c49cec156413bb9d6c4d571e629992af5a780c3f09e87f3e1231af9924c3"
+  },
+  "nodeGroups": [],
+  "id": "nnEfjLNU0ixEfGtN",
+  "tags": []
+}
